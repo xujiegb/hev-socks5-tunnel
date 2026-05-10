@@ -150,6 +150,7 @@ jobs:
     name: FreeBSD
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - name: x86_64
@@ -169,6 +170,7 @@ jobs:
         with:
           usesh: true
           arch: ${{ matrix.arch }}
+          sync: sshfs
           prepare: |
             pkg install -y gmake gcc
           run: |
