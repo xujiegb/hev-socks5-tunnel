@@ -196,9 +196,10 @@ jobs:
               pkg install -y gmake gcc git
             fi
           run: |
-            fetch -o src.tar.gz https://github.com/${GITHUB_REPOSITORY}/archive/${GITHUB_SHA}.tar.gz
-            tar xf src.tar.gz
-            cd hev-socks5-tunnel-${GITHUB_SHA}
+            git clone --recursive https://github.com/${GITHUB_REPOSITORY}.git work
+            cd work
+            git checkout ${GITHUB_SHA}
+            git submodule update --init --recursive
 
             if [ "${{ matrix.name }}" = "riscv64" ]; then
               export PATH=/tmp/gcc/bin:/tmp/gmake/bin:$PATH
