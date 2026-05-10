@@ -149,26 +149,36 @@ jobs:
   freebsd:
     name: FreeBSD
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: x86_64
+            arch: x86_64
+          - name: arm64
+            arch: aarch64
+          - name: riscv64
+            arch: riscv64
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 1
           submodules: true
-      - name: Build
+      - name: Build ${{ matrix.name }}
         uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
+          arch: ${{ matrix.arch }}
           prepare: |
             pkg install -y gmake gcc
           run: |
             gmake
-            cp bin/hev-socks5-tunnel hev-socks5-tunnel-freebsd-x86_64
-      - name: Upload
+            cp bin/hev-socks5-tunnel hev-socks5-tunnel-freebsd-${{ matrix.name }}
+      - name: Upload ${{ matrix.name }}
         uses: actions/upload-artifact@v7
         with:
-          name: hev-socks5-tunnel-freebsd-x86_64
-          path: hev-socks5-tunnel-freebsd-x86_64
+          name: hev-socks5-tunnel-freebsd-${{ matrix.name }}
+          path: hev-socks5-tunnel-freebsd-${{ matrix.name }}
           if-no-files-found: error
           retention-days: 1
 
