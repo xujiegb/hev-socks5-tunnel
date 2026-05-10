@@ -165,6 +165,10 @@ jobs:
         with:
           fetch-depth: 1
           submodules: true
+      - name: Install sshfs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshfs
       - name: Build ${{ matrix.name }}
         uses: vmactions/freebsd-vm@v1
         with:
