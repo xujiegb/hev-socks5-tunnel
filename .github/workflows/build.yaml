@@ -149,6 +149,7 @@ jobs:
   freebsd:
     name: FreeBSD
     runs-on: ubuntu-latest
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -167,13 +168,45 @@ jobs:
           arch: ${{ matrix.arch }}
           sync: no
           prepare: |
-            pkg install -y gmake git
+            if [ "${{ matrix.name }}" = "riscv64" ]; then
+              fetch https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz
+              tar xf make-4.4.1.tar.gz
+              cd make-4.4.1
+              ./configure --prefix=/tmp/gmake
+              make
+              make install
+
+              cd ..
+              fetch https://ftp.gnu.org/gnu/gcc/gcc-14.2.0/gcc-14.2.0.tar.xz
+              tar xf gcc-14.2.0.tar.xz
+              cd gcc-14.2.0
+              ./contrib/download_prerequisites
+
+              mkdir ../gcc-build
+              cd ../gcc-build
+              ../gcc-14.2.0/configure \
+                --prefix=/tmp/gcc \
+                --disable-multilib \
+                --enable-languages=c \
+                --disable-bootstrap \
+                --disable-nls
+              /tmp/gmake/bin/make -j1
+              /tmp/gmake/bin/make install
+            else
+              pkg install -y gmake gcc git
+            fi
           run: |
-            git clone https://github.com/${GITHUB_REPOSITORY}.git work
-            cd work
-            git checkout ${GITHUB_SHA}
-            git submodule update --init --recursive
-            gmake
+            fetch -o src.tar.gz https://github.com/${GITHUB_REPOSITORY}/archive/${GITHUB_SHA}.tar.gz
+            tar xf src.tar.gz
+            cd hev-socks5-tunnel-${GITHUB_SHA}
+
+            if [ "${{ matrix.name }}" = "riscv64" ]; then
+              export PATH=/tmp/gcc/bin:/tmp/gmake/bin:$PATH
+              gmake CC=gcc
+            else
+              gmake
+            fi
+
             cp bin/hev-socks5-tunnel /tmp/hev-socks5-tunnel-freebsd-${{ matrix.name }}
       - name: Copy ${{ matrix.name }}
         run: |
