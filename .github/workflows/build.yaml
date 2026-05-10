@@ -160,26 +160,25 @@ jobs:
           - name: riscv64
             arch: riscv64
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-          submodules: true
-      - name: Install sshfs
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y sshfs
       - name: Build ${{ matrix.name }}
         uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
           arch: ${{ matrix.arch }}
-          sync: sshfs
+          sync: none
           prepare: |
-            pkg install -y gmake gcc
+            pkg install -y gmake gcc git
           run: |
+            git clone https://github.com/${GITHUB_REPOSITORY}.git work
+            cd work
+            git checkout ${GITHUB_SHA}
+            git submodule update --init --recursive
             gmake
-            cp bin/hev-socks5-tunnel hev-socks5-tunnel-freebsd-${{ matrix.name }}
+            cp bin/hev-socks5-tunnel /tmp/hev-socks5-tunnel-freebsd-${{ matrix.name }}
+      - name: Copy ${{ matrix.name }}
+        run: |
+          scp -o StrictHostKeyChecking=no \
+            freebsd:/tmp/hev-socks5-tunnel-freebsd-${{ matrix.name }} .
       - name: Upload ${{ matrix.name }}
         uses: actions/upload-artifact@v7
         with:
