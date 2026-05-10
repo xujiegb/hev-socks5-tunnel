@@ -165,7 +165,7 @@ jobs:
         with:
           usesh: true
           arch: ${{ matrix.arch }}
-          sync: none
+          sync: no
           prepare: |
             pkg install -y gmake gcc git
           run: |
