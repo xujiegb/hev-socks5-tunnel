@@ -167,7 +167,7 @@ jobs:
           arch: ${{ matrix.arch }}
           sync: no
           prepare: |
-            pkg install -y gmake gcc git
+            pkg install -y gmake git
           run: |
             git clone https://github.com/${GITHUB_REPOSITORY}.git work
             cd work
